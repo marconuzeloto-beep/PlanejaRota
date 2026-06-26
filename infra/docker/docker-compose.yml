@@ -1,0 +1,51 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgis/postgis:15-3.3-alpine
+    container_name: planejarota-db
+    environment:
+      POSTGRES_DB: planejarota
+      POSTGRES_USER: planejarota
+      POSTGRES_PASSWORD: planejarota
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U planejarota -d planejarota"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ../../backend
+      dockerfile: Dockerfile
+    container_name: planejarota-api
+    environment:
+      DATABASE_URL: jdbc:postgresql://postgres:5432/planejarota
+      DATABASE_USER: planejarota
+      DATABASE_PASSWORD: planejarota
+      JWT_SECRET: ${JWT_SECRET:-change-this-in-production-use-256bit-random-string}
+      CORS_ALLOWED_ORIGINS: http://localhost:5173
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ../../frontend
+      dockerfile: Dockerfile
+    container_name: planejarota-web
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
