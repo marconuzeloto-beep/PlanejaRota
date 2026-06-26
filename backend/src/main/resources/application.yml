@@ -10,6 +10,9 @@ spring:
       maximum-pool-size: 10
       minimum-idle: 2
       connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      pool-name: LogiCoreHikariPool
   jpa:
     hibernate:
       ddl-auto: validate
@@ -18,7 +21,11 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
-        format_sql: true
+        format_sql: false
+        jdbc:
+          batch_size: 50
+        order_inserts: true
+        order_updates: true
   flyway:
     enabled: true
     locations: classpath:db/migration
@@ -26,6 +33,10 @@ spring:
 
 server:
   port: ${SERVER_PORT:8080}
+  compression:
+    enabled: true
+    mime-types: application/json,application/xml,text/html,text/plain
+    min-response-size: 1024
   error:
     include-message: never
     include-binding-errors: never
@@ -49,10 +60,96 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: health,info,metrics,prometheus
   endpoint:
     health:
       show-details: when_authorized
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+logging:
+  level:
+    com.logicore: INFO
+    org.hibernate.SQL: WARN
+
+---
+spring:
+  config:
+    activate:
+      on-profile: local
+  datasource:
+    hikari:
+      maximum-pool-size: 5
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+logging:
+  level:
+    com.logicore: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.orm.jdbc.bind: TRACE
+
+---
+spring:
+  config:
+    activate:
+      on-profile: development
+  datasource:
+    hikari:
+      maximum-pool-size: 10
+
+logging:
+  level:
+    com.logicore: DEBUG
+    org.hibernate.SQL: WARN
+
+---
+spring:
+  config:
+    activate:
+      on-profile: production
+
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics,prometheus
+  endpoint:
+    health:
+      show-details: never
+
+logging:
+  structured:
+    format:
+      console: ecs
+  level:
+    com.logicore: INFO
+    org.hibernate.SQL: ERROR
+
+---
+spring:
+  config:
+    activate:
+      on-profile: test
+  datasource:
+    hikari:
+      maximum-pool-size: 5
+      minimum-idle: 1
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true
 
 logging:
   level:

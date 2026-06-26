@@ -1,14 +1,32 @@
+# ── Stage 1: Build ────────────────────────────────────────────────────────────
 FROM maven:3.9-eclipse-temurin-21-alpine AS builder
 WORKDIR /app
+
+# Cache de dependências separado da compilação
 COPY pom.xml .
 RUN mvn dependency:go-offline -q
+
 COPY src ./src
 RUN mvn package -DskipTests -q
 
+# ── Stage 2: Runtime ──────────────────────────────────────────────────────────
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
-RUN addgroup -S planejarota && adduser -S planejarota -G planejarota
+
+RUN addgroup -S logicore && adduser -S logicore -G logicore
+
+# curl para health check
+RUN apk add --no-cache curl
+
 COPY --from=builder /app/target/*.jar app.jar
-USER planejarota
+USER logicore
+
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "app.jar"]
+
+# JVM tuning para containers
+ENTRYPOINT ["java", \
+  "-XX:+UseContainerSupport", \
+  "-XX:MaxRAMPercentage=75.0", \
+  "-XX:+UseG1GC", \
+  "-Djava.security.egd=file:/dev/./urandom", \
+  "-jar", "app.jar"]

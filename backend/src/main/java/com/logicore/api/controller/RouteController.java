@@ -12,6 +12,9 @@ import com.logicore.simulation.application.usecase.CompareStrategiesService;
 import com.logicore.simulation.application.usecase.WhatIfService;
 import com.logicore.simulation.domain.valueobject.ImpactReport;
 import com.logicore.simulation.domain.valueobject.ScenarioComparison;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -19,6 +22,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 import java.util.UUID;
 
+@Tag(name = "Routes", description = "Planejamento e simulação de rotas")
+@SecurityRequirement(name = "bearerAuth")
 @RestController
 @RequestMapping("/api/v1/routes")
 public class RouteController {
@@ -35,6 +40,7 @@ public class RouteController {
         this.whatIfService = whatIfService;
     }
 
+    @Operation(summary = "Planejar rota com estratégia escolhida")
     @PostMapping("/plan")
     @ResponseStatus(HttpStatus.CREATED)
     public MapRouteDTO plan(@Valid @RequestBody PlanRouteRequest req) {
@@ -55,6 +61,7 @@ public class RouteController {
         return MapRouteDTO.from(result.routeId(), req.depotLat(), req.depotLng(), result.decisionResult());
     }
 
+    @Operation(summary = "Comparar N estratégias em memória — nunca persiste")
     @PostMapping("/simulate")
     public ScenarioComparison simulate(@Valid @RequestBody SimulateRequest req) {
         UUID orgId = TenantContext.get();
@@ -67,6 +74,7 @@ public class RouteController {
                 constraints, req.strategyIdentifiers()));
     }
 
+    @Operation(summary = "Simular impacto de adicionar um pedido a uma rota existente")
     @PostMapping("/{routeId}/what-if/{orderId}")
     public ImpactReport whatIf(@PathVariable UUID routeId, @PathVariable UUID orderId) {
         return whatIfService.execute(new WhatIfService.Command(TenantContext.get(), routeId, orderId));

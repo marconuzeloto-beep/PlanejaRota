@@ -15,6 +15,7 @@ import com.logicore.planning.domain.valueobject.RouteConstraints;
 import com.logicore.planning.infrastructure.strategy.StrategyRegistry;
 import com.logicore.shared.domain.exception.ResourceNotFoundException;
 import com.logicore.shared.domain.valueobject.GeoCoordinate;
+import com.logicore.shared.infrastructure.metrics.PlanningMetrics;
 import com.logicore.simulation.domain.valueobject.ScenarioComparison;
 import com.logicore.simulation.domain.valueobject.ScenarioSummary;
 import org.springframework.stereotype.Service;
@@ -46,19 +47,23 @@ public class CompareStrategiesService {
     private final OrderRepository orderRepository;
     private final CustomerRepository customerRepository;
     private final StrategyRegistry strategyRegistry;
+    private final PlanningMetrics metrics;
 
     public CompareStrategiesService(VehicleRepository vehicleRepository,
                                      OrderRepository orderRepository,
                                      CustomerRepository customerRepository,
-                                     StrategyRegistry strategyRegistry) {
+                                     StrategyRegistry strategyRegistry,
+                                     PlanningMetrics metrics) {
         this.vehicleRepository = vehicleRepository;
         this.orderRepository = orderRepository;
         this.customerRepository = customerRepository;
         this.strategyRegistry = strategyRegistry;
+        this.metrics = metrics;
     }
 
     @Transactional(readOnly = true)
     public ScenarioComparison execute(Command cmd) {
+        long start = System.currentTimeMillis();
         Vehicle vehicle = vehicleRepository.findById(cmd.organizationId(), cmd.vehicleId())
                 .orElseThrow(() -> new ResourceNotFoundException("Veículo não encontrado: " + cmd.vehicleId()));
 
@@ -105,6 +110,8 @@ public class CompareStrategiesService {
                 })
                 .toList();
 
-        return ScenarioComparison.of(summaries);
+        ScenarioComparison comparison = ScenarioComparison.of(summaries);
+        metrics.recordSimulation(System.currentTimeMillis() - start);
+        return comparison;
     }
 }

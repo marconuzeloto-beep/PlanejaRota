@@ -19,6 +19,8 @@ public record ScenarioComparison(
     }
 
     public static ScenarioComparison of(List<ScenarioSummary> scenarios) {
+        if (scenarios == null || scenarios.isEmpty())
+            throw new IllegalArgumentException("Scenarios não podem ser vazios");
         ScenarioSummary best = scenarios.stream()
                 .filter(ScenarioSummary::isFeasible)
                 .min(Comparator.comparingDouble(ScenarioSummary::totalDistanceKm))

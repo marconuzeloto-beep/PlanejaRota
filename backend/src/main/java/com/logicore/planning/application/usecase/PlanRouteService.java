@@ -18,6 +18,7 @@ import com.logicore.planning.infrastructure.strategy.StrategyRegistry;
 import com.logicore.shared.domain.exception.BusinessRuleException;
 import com.logicore.shared.domain.exception.ResourceNotFoundException;
 import com.logicore.shared.domain.valueobject.GeoCoordinate;
+import com.logicore.shared.infrastructure.metrics.PlanningMetrics;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -49,21 +50,25 @@ public class PlanRouteService {
     private final CustomerRepository customerRepository;
     private final RouteRepository routeRepository;
     private final StrategyRegistry strategyRegistry;
+    private final PlanningMetrics metrics;
 
     public PlanRouteService(VehicleRepository vehicleRepository,
                              OrderRepository orderRepository,
                              CustomerRepository customerRepository,
                              RouteRepository routeRepository,
-                             StrategyRegistry strategyRegistry) {
+                             StrategyRegistry strategyRegistry,
+                             PlanningMetrics metrics) {
         this.vehicleRepository = vehicleRepository;
         this.orderRepository = orderRepository;
         this.customerRepository = customerRepository;
         this.routeRepository = routeRepository;
         this.strategyRegistry = strategyRegistry;
+        this.metrics = metrics;
     }
 
     @Transactional
     public Result execute(Command cmd) {
+        long start = System.currentTimeMillis();
         Vehicle vehicle = vehicleRepository.findById(cmd.organizationId(), cmd.vehicleId())
                 .orElseThrow(() -> new ResourceNotFoundException("Veículo não encontrado: " + cmd.vehicleId()));
 
@@ -105,6 +110,7 @@ public class PlanRouteService {
         route.applyDecisionResult(decisionResult);
 
         Route saved = routeRepository.save(route);
+        metrics.recordPlanRoute(System.currentTimeMillis() - start);
         return new Result(saved.getId(), decisionResult);
     }
 }

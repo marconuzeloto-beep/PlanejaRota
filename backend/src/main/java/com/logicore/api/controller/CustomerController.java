@@ -7,6 +7,9 @@ import com.logicore.core.domain.repository.CustomerRepository;
 import com.logicore.shared.domain.valueobject.Address;
 import com.logicore.shared.domain.valueobject.GeoCoordinate;
 import com.logicore.shared.infrastructure.tenant.TenantContext;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +18,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+@Tag(name = "Customers", description = "Gestão de clientes")
+@SecurityRequirement(name = "bearerAuth")
 @RestController
 @RequestMapping("/api/v1/customers")
 public class CustomerController {
