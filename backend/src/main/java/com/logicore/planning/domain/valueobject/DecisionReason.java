@@ -1,0 +1,38 @@
+package com.logicore.planning.domain.valueobject;
+
+/**
+ * Razão estruturada de uma decisão do algoritmo para uma parada específica.
+ * O tipo é um enum para renderização frontend consistente.
+ * O detalhe é texto human-readable gerado pelo algoritmo.
+ */
+public record DecisionReason(ReasonType type, String detail) {
+
+    public enum ReasonType {
+        NEAREST_NEIGHBOR,       // vizinho mais próximo disponível
+        PRIORITY_OVERRIDE,      // prioridade alta forçou visita antes do mais próximo
+        TIME_WINDOW_CONSTRAINT, // única posição que respeita a janela de tempo
+        HYBRID_SCORE,           // score combinado de múltiplos critérios
+        MANUAL_OVERRIDE         // posição definida manualmente pelo usuário
+    }
+
+    public static DecisionReason nearestNeighbor(double distanceKm) {
+        return new DecisionReason(ReasonType.NEAREST_NEIGHBOR,
+                String.format("Vizinho mais próximo disponível: %.1f km", distanceKm));
+    }
+
+    public static DecisionReason priorityOverride(int priority, double distanceKm) {
+        return new DecisionReason(ReasonType.PRIORITY_OVERRIDE,
+                String.format("Prioridade %d — visitado antes do vizinho mais próximo (%.1f km)", priority, distanceKm));
+    }
+
+    public static DecisionReason hybridScore(double score, double distWeight, double prioWeight) {
+        return new DecisionReason(ReasonType.HYBRID_SCORE,
+                String.format("Score combinado %.2f (distância %.0f%% + prioridade %.0f%%)",
+                        score, distWeight * 100, prioWeight * 100));
+    }
+
+    public static DecisionReason timeWindowConstraint(String window) {
+        return new DecisionReason(ReasonType.TIME_WINDOW_CONSTRAINT,
+                "Janela de tempo obrigatória: " + window);
+    }
+}

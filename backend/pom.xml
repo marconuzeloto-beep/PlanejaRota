@@ -11,12 +11,12 @@
         <relativePath/>
     </parent>
 
-    <groupId>com.planejarota</groupId>
-    <artifactId>planejarota-backend</artifactId>
+    <groupId>com.logicore</groupId>
+    <artifactId>logicore-backend</artifactId>
     <version>0.1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
-    <name>PlanejaRota Backend</name>
-    <description>Planejador Logístico Inteligente — Backend API</description>
+    <name>logicore-backend</name>
+    <description>LogiCore Backend API</description>
 
     <properties>
         <java.version>21</java.version>
