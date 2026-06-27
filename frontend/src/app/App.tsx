@@ -11,7 +11,8 @@ const CustomersPage     = lazy(() => import('@/features/customers/CustomersPage'
 const VehiclesPage      = lazy(() => import('@/features/vehicles/VehiclesPage'))
 const OrdersPage        = lazy(() => import('@/features/orders/OrdersPage'))
 const RoutePlanningPage = lazy(() => import('@/features/route-planning/components/RoutePlanningPage'))
-const SimulationDashboard = lazy(() => import('@/features/simulation/SimulationDashboard'))
+const SimulationDashboard  = lazy(() => import('@/features/simulation/SimulationDashboard'))
+const BenchmarkDashboard   = lazy(() => import('@/features/benchmark/BenchmarkDashboard'))
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 60_000, retry: 1 } },
@@ -77,6 +78,14 @@ const router = createBrowserRouter([
             element: (
               <Suspense fallback={<PageLoader />}>
                 <OrdersPage />
+              </Suspense>
+            ),
+          },
+          {
+            path: '/benchmark',
+            element: (
+              <Suspense fallback={<PageLoader />}>
+                <BenchmarkDashboard />
               </Suspense>
             ),
           },

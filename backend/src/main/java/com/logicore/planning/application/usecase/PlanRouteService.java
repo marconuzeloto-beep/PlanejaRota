@@ -15,6 +15,8 @@ import com.logicore.planning.domain.valueobject.DecisionResult;
 import com.logicore.planning.domain.valueobject.PlanningOrder;
 import com.logicore.planning.domain.valueobject.RouteConstraints;
 import com.logicore.planning.infrastructure.strategy.StrategyRegistry;
+import com.logicore.planning.domain.pipeline.PipelineContext;
+import com.logicore.planning.infrastructure.pipeline.OptimizationPipeline;
 import com.logicore.shared.domain.exception.BusinessRuleException;
 import com.logicore.shared.domain.exception.ResourceNotFoundException;
 import com.logicore.shared.domain.valueobject.GeoCoordinate;
@@ -50,6 +52,7 @@ public class PlanRouteService {
     private final CustomerRepository customerRepository;
     private final RouteRepository routeRepository;
     private final StrategyRegistry strategyRegistry;
+    private final OptimizationPipeline optimizationPipeline;
     private final PlanningMetrics metrics;
 
     public PlanRouteService(VehicleRepository vehicleRepository,
@@ -57,12 +60,14 @@ public class PlanRouteService {
                              CustomerRepository customerRepository,
                              RouteRepository routeRepository,
                              StrategyRegistry strategyRegistry,
+                             OptimizationPipeline optimizationPipeline,
                              PlanningMetrics metrics) {
         this.vehicleRepository = vehicleRepository;
         this.orderRepository = orderRepository;
         this.customerRepository = customerRepository;
         this.routeRepository = routeRepository;
         this.strategyRegistry = strategyRegistry;
+        this.optimizationPipeline = optimizationPipeline;
         this.metrics = metrics;
     }
 
@@ -102,8 +107,11 @@ public class PlanRouteService {
                 ? cmd.strategyConfig()
                 : StrategyConfig.defaults();
 
-        DecisionResult decisionResult = RouteBuilder.build(
-                planningOrders, vehicle, cmd.depot(), constraints, strategy, config);
+        // Executa via pipeline: constraint eval + 2-opt + score
+        PipelineContext ctx = PipelineContext.of(cmd.organizationId(), planningOrders,
+                vehicle, cmd.depot(), constraints, strategy, config);
+        var pipelineResult = optimizationPipeline.execute(ctx);
+        DecisionResult decisionResult = pipelineResult.decisionResult();
 
         Route route = Route.create(cmd.organizationId(), cmd.vehicleId(),
                 cmd.depot(), cmd.plannedDate(), constraints);
