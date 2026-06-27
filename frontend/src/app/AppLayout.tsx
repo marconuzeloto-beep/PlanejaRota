@@ -3,12 +3,17 @@ import { useAppStore } from '@/shared/store/appStore'
 import { clsx } from 'clsx'
 
 const NAV = [
-  { to: '/',           label: 'Dashboard',   icon: '📊' },
-  { to: '/simulate',   label: 'Simulação',   icon: '🔬' },
-  { to: '/plan',       label: 'Planejamento', icon: '🗺️' },
-  { to: '/customers',  label: 'Clientes',    icon: '👤' },
-  { to: '/vehicles',   label: 'Veículos',    icon: '🚚' },
-  { to: '/orders',     label: 'Pedidos',     icon: '📦' },
+  { to: '/',                  label: 'Dashboard',    icon: '📊' },
+  { to: '/plan',              label: 'Planejamento',  icon: '🗺️' },
+  { to: '/simulate',          label: 'Simulação',    icon: '🔬' },
+  { to: '/live',              label: 'Live Map',     icon: '📡' },
+  { to: '/advisor',           label: 'Advisor',      icon: '🧠' },
+  { to: '/analytics',         label: 'Analytics',    icon: '📈' },
+  { to: '/benchmark',         label: 'Benchmark',    icon: '🏁' },
+  { to: '/customers',         label: 'Clientes',     icon: '👤' },
+  { to: '/vehicles',          label: 'Veículos',     icon: '🚚' },
+  { to: '/orders',            label: 'Pedidos',      icon: '📦' },
+  { to: '/api-keys',          label: 'API Keys',     icon: '🔑' },
 ]
 
 export function AppLayout() {

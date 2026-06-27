@@ -1,5 +1,7 @@
 package com.logicore.benchmark.api;
 
+import com.logicore.benchmark.application.usecase.BenchmarkExportService;
+import com.logicore.benchmark.application.usecase.BenchmarkStatsService;
 import com.logicore.benchmark.application.usecase.RunBenchmarkService;
 import com.logicore.benchmark.domain.model.BenchmarkEntry;
 import com.logicore.benchmark.domain.repository.BenchmarkRepository;
@@ -10,8 +12,12 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
@@ -23,11 +29,17 @@ public class BenchmarkController {
 
     private final RunBenchmarkService runBenchmarkService;
     private final BenchmarkRepository benchmarkRepository;
+    private final BenchmarkExportService exportService;
+    private final BenchmarkStatsService statsService;
 
     public BenchmarkController(RunBenchmarkService runBenchmarkService,
-                                BenchmarkRepository benchmarkRepository) {
+                                BenchmarkRepository benchmarkRepository,
+                                BenchmarkExportService exportService,
+                                BenchmarkStatsService statsService) {
         this.runBenchmarkService = runBenchmarkService;
         this.benchmarkRepository = benchmarkRepository;
+        this.exportService = exportService;
+        this.statsService = statsService;
     }
 
     public record RunBenchmarkRequest(
@@ -45,7 +57,7 @@ public class BenchmarkController {
     public RunBenchmarkService.Result run(@Valid @RequestBody RunBenchmarkRequest req) {
         UUID orgId = TenantContext.get();
         RouteConstraints constraints = req.maxWeightKg() != null || req.avgSpeedKmh() != null
-                ? new RouteConstraints(
+                ? RouteConstraints.of(
                         req.maxWeightKg() != null ? req.maxWeightKg() : 1000.0,
                         req.avgSpeedKmh() != null ? req.avgSpeedKmh() : 40.0,
                         10, false)
@@ -73,5 +85,32 @@ public class BenchmarkController {
     public List<BenchmarkEntry> historyByStrategy(@PathVariable String strategyId,
                                                    @RequestParam(defaultValue = "20") int limit) {
         return benchmarkRepository.findByOrganizationAndStrategy(TenantContext.get(), strategyId, limit);
+    }
+
+    @Operation(summary = "Estatísticas avançadas por estratégia (p95, p99, stddev)")
+    @GetMapping("/stats")
+    public List<BenchmarkStatsService.PercentileStats> stats(
+            @RequestParam(defaultValue = "500") int limit) {
+        return statsService.computeStats(TenantContext.get(), limit);
+    }
+
+    @Operation(summary = "Exportar histórico em CSV")
+    @GetMapping("/export/csv")
+    public ResponseEntity<byte[]> exportCsv(@RequestParam(defaultValue = "500") int limit) throws IOException {
+        var result = exportService.exportCsv(TenantContext.get(), limit);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + result.filename() + "\"")
+                .contentType(MediaType.parseMediaType(result.contentType()))
+                .body(result.data());
+    }
+
+    @Operation(summary = "Exportar histórico em Excel (.xlsx)")
+    @GetMapping("/export/excel")
+    public ResponseEntity<byte[]> exportExcel(@RequestParam(defaultValue = "500") int limit) throws IOException {
+        var result = exportService.exportExcel(TenantContext.get(), limit);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + result.filename() + "\"")
+                .contentType(MediaType.parseMediaType(result.contentType()))
+                .body(result.data());
     }
 }

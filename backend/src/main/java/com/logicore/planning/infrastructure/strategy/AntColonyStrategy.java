@@ -172,8 +172,8 @@ public class AntColonyStrategy implements OptimizationStrategy {
     }
 
     private double param(StrategyConfig config, String key, double def) {
-        if (config == null || config.parameters() == null) return def;
-        Object v = config.parameters().get(key);
+        if (config == null || config.params() == null) return def;
+        Object v = config.params().get(key);
         return v instanceof Number n ? n.doubleValue() : def;
     }
 }

@@ -52,7 +52,7 @@ public class RouteMapper {
 
     public Route toDomain(RouteJpaEntity e) {
         GeoCoordinate depot = new GeoCoordinate(e.getDepotLat(), e.getDepotLng());
-        RouteConstraints constraints = new RouteConstraints(
+        RouteConstraints constraints = RouteConstraints.of(
                 e.getMaxWeightKg(), e.getAvgSpeedKmh(),
                 e.getStopDurationMinutes(), e.getHardTimeWindows());
         DecisionResult decisionResult = fromJson(e.getDecisionResultJson(), DecisionResult.class);

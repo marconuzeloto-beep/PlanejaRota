@@ -85,7 +85,7 @@ public class RouteController {
         if (maxWeight == null && avgSpeed == null && stopDuration == null && hardWindows == null) {
             return null; // will use defaults in service
         }
-        return new RouteConstraints(
+        return RouteConstraints.of(
                 maxWeight != null ? maxWeight : 1000.0,
                 avgSpeed != null ? avgSpeed : 40.0,
                 stopDuration != null ? stopDuration : 10,

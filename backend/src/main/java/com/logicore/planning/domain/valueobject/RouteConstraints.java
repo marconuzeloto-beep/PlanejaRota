@@ -8,7 +8,10 @@ public record RouteConstraints(
         double maxWeightKg,
         double averageSpeedKmh,
         int stopDurationMinutes,
-        boolean hardTimeWindows
+        boolean hardTimeWindows,
+        int maxStops,
+        boolean enforceDriverBreak,
+        boolean hasHazardousCargo
 ) {
     public RouteConstraints {
         if (maxWeightKg <= 0) throw new IllegalArgumentException("Capacidade máxima deve ser positiva");
@@ -17,6 +20,12 @@ public record RouteConstraints(
     }
 
     public static RouteConstraints withDefaults(double maxWeightKg) {
-        return new RouteConstraints(maxWeightKg, 40.0, 10, false);
+        return new RouteConstraints(maxWeightKg, 40.0, 10, false, 0, false, false);
+    }
+
+    public static RouteConstraints of(double maxWeightKg, double averageSpeedKmh,
+                                      int stopDurationMinutes, boolean hardTimeWindows) {
+        return new RouteConstraints(maxWeightKg, averageSpeedKmh, stopDurationMinutes, hardTimeWindows,
+                0, false, false);
     }
 }

@@ -13,6 +13,11 @@ const OrdersPage        = lazy(() => import('@/features/orders/OrdersPage'))
 const RoutePlanningPage = lazy(() => import('@/features/route-planning/components/RoutePlanningPage'))
 const SimulationDashboard  = lazy(() => import('@/features/simulation/SimulationDashboard'))
 const BenchmarkDashboard   = lazy(() => import('@/features/benchmark/BenchmarkDashboard'))
+const AnalyticsDashboard   = lazy(() => import('@/features/analytics/AnalyticsDashboard'))
+const LiveMap              = lazy(() => import('@/features/execution/LiveMap'))
+const StrategyAdvisorPage  = lazy(() => import('@/features/advisor/StrategyAdvisorPage'))
+const ApiKeysPage          = lazy(() => import('@/features/security/ApiKeysPage'))
+const BenchmarkEvolution   = lazy(() => import('@/features/benchmark/BenchmarkEvolution'))
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 60_000, retry: 1 } },
@@ -86,6 +91,46 @@ const router = createBrowserRouter([
             element: (
               <Suspense fallback={<PageLoader />}>
                 <BenchmarkDashboard />
+              </Suspense>
+            ),
+          },
+          {
+            path: '/analytics',
+            element: (
+              <Suspense fallback={<PageLoader />}>
+                <AnalyticsDashboard />
+              </Suspense>
+            ),
+          },
+          {
+            path: '/live',
+            element: (
+              <Suspense fallback={<PageLoader />}>
+                <LiveMap />
+              </Suspense>
+            ),
+          },
+          {
+            path: '/advisor',
+            element: (
+              <Suspense fallback={<PageLoader />}>
+                <StrategyAdvisorPage />
+              </Suspense>
+            ),
+          },
+          {
+            path: '/api-keys',
+            element: (
+              <Suspense fallback={<PageLoader />}>
+                <ApiKeysPage />
+              </Suspense>
+            ),
+          },
+          {
+            path: '/benchmark/evolution',
+            element: (
+              <Suspense fallback={<PageLoader />}>
+                <BenchmarkEvolution />
               </Suspense>
             ),
           },
